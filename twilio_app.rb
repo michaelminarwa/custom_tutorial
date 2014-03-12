@@ -8,7 +8,7 @@ class TwilioApp < Sinatra::Base
     payload = JSON.parse(request.body.read).with_indifferent_access
     request_id = payload[:request_id]
     sms = payload[:sms]
-    params = payload[:parameters]
+    params = payload[:parameters].inject({}) { |all, param_hash| all.merge(param_hash) }.with_indifferent_access
 
     begin
       client = Twilio::REST::Client.new(params[:account_sid], params[:auth_token])
@@ -16,10 +16,10 @@ class TwilioApp < Sinatra::Base
         :from => sms[:from],
         :to => sms[:phone],
         :body => sms[:message])
-    rescue
+    rescue => e
       # tell the hub about the unsuccessful delivery attempt
       status 500
-      return { request_id: request_id, summary: "Unable to send SMS message" }.to_json + "\n"
+      return { request_id: request_id, summary: "Unable to send SMS message. Error: #{e.message}" }.to_json + "\n"
     end
 
     # acknowledge the successful delivery of the message
