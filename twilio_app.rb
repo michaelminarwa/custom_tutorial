@@ -8,7 +8,7 @@ class TwilioApp < Sinatra::Base
     payload = JSON.parse(request.body.read).with_indifferent_access
     request_id = payload[:request_id]
     sms = payload[:sms]
-    params = payload[:params]
+    params = payload[:parameters]
 
     begin
       client = Twilio::REST::Client.new(params[:account_sid], params[:auth_token])
